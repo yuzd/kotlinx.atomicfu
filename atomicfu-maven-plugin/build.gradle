@@ -18,7 +18,7 @@ dependencies {
 }
 
 def pomFile = file("$buildDir/pom.xml")
-def outputDir = compileKotlin.destinationDir
+def outputDir = compileKotlin.destinationDirectory.toString()
 def buildSnapshots = rootProject.properties['build_snapshot_train'] != null
 
 evaluationDependsOn(':atomicfu-transformer')
@@ -91,3 +91,9 @@ task generatePluginDescriptor(type: Exec, dependsOn: generatePomFile) {
 }
 
 project.jar.dependsOn(generatePluginDescriptor)
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-fir"
+    }
+}

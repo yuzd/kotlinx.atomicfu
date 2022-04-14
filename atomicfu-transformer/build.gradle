@@ -19,3 +19,9 @@ dependencies {
     compile "org.mozilla:rhino:1.7.10"
     compile "org.jetbrains.kotlinx:kotlinx-metadata-jvm:$kotlinx_metadata_version"
 }
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-fir"
+    }
+}

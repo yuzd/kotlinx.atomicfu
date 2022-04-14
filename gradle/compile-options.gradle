@@ -19,10 +19,10 @@ ext.configureKotlin = { isMultiplatform ->
 
     kotlin.sourceSets.all {
         languageSettings {
-            apiVersion = "1.4"
-            languageVersion = "1.4"
-            useExperimentalAnnotation("kotlin.Experimental")
-            useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
+            apiVersion = "1.7"
+            languageVersion = "1.7"
+            //useExperimentalAnnotation("kotlin.Experimental")
+            //useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
         }
     }
 }

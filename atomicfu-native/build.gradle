@@ -5,3 +5,9 @@
 // this is a kludge so that existing YouTrack config works, todo: remove
 // Deploy configurations run :atomicfu-native:bintrayUpload
 task publish(dependsOn: ':atomicfu:publish')
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-fir"
+    }
+}

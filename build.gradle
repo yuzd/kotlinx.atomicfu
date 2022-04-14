@@ -30,13 +30,15 @@ buildscript {
     ext.native_targets_enabled = rootProject.properties['disable_native_targets'] == null
 
     repositories {
+        //maven { url "F:/JetBrains/kotlin./build/repo" }
+        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap" }
         jcenter()
         maven { url "https://plugins.gradle.org/m2/" }
         // Future replacement for kotlin-dev, with cache redirector
         maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
         maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
     }
-    
+
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.moowork.gradle:gradle-node-plugin:$gradle_node_version"
@@ -56,6 +58,8 @@ allprojects {
 
     println "Using Kotlin $kotlin_version for project $it"
     repositories {
+        //maven { url "F:/JetBrains/kotlin/build/repo" }
+        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap" }
         jcenter()
         // Future replacement for kotlin-dev, with cache redirector
         maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
@@ -101,3 +105,9 @@ if (build_snapshot_train) {
 
 // main deployment task
 task deploy(dependsOn: getTasksByName("publish", true) + getTasksByName("publishNpm", true))
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-fir"
+    }
+}
