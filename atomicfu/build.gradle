@@ -24,6 +24,7 @@ kotlin {
 
     // JS -- always
     js {
+        moduleName = "kotlinx-atomicfu"
         // TODO: Commented out because browser tests do not work on TeamCity
         // browser()
         nodejs()
@@ -164,14 +165,6 @@ tasks.withType(compileJsLegacy.getClass()) {
     }
 }
 
-compileJsLegacy.configure {
-    kotlinOptions {
-        // NOTE: Module base-name must be equal to the package name declared in package.json
-        def baseName = "kotlinx-atomicfu"
-        outputFile = new File(new File(outputFile).parent, baseName + ".js")
-    }
-}
-
 apply from: file("$rootProject.projectDir/gradle/node-js.gradle")
 apply from: file("$rootProject.projectDir/gradle/publish-npm-js.gradle")
 
@@ -208,8 +201,14 @@ task transformJS(type: JavaExec, dependsOn: [compileTestJsLegacy]) {
 
 if (project.tasks.findByName('jsLegacyNodeTest')) {
     jsLegacyNodeTest.dependsOn transformJS
+    jsLegacyNodeTest.configure {
+        inputFileProperty.set(new File(transformedJsFile))
+    }
 } else {
     jsNodeTest.dependsOn transformJS
+    jsNodeTest.configure {
+        inputFileProperty.set(new File(transformedJsFile))
+    }
 }
 
 // ==== CONFIGURE JVM =====
@@ -221,7 +220,7 @@ def classesPostTransformBOTH = file("$buildDir/classes/kotlin/jvm/postTransforme
 
 tasks.withType(compileTestKotlinJvm.getClass()) {
     kotlinOptions {
-        jvmTarget = "1.6"
+        jvmTarget = "1.8"
     }
 }
 
@@ -249,36 +248,10 @@ task transformVH(type: JavaExec, dependsOn: compileTestKotlinJvm) {
     outputs.dir(classesPostTransformVH)
 }
 
-task checkJdk16() {
-    doLast {
-        if (!System.env.JDK_16) {
-            throw new GradleException("JDK_16 environment variable is not defined. " +
-                    "Can't build against JDK 1.6 runtime and run JDK 1.6 compatibility tests. " +
-                    "Please ensure JDK 1.6 is installed and that JDK_16 points to it.")
-        }
-    }
-}
-
-task transformedTestFU_6(type: Test, dependsOn: [checkJdk16, transformFU]) {
-    executable = "$System.env.JDK_16/bin/java"
-    classpath = configurations.jvmTestRuntimeClasspath + project.files(classesPostTransformFU)
-    testClassesDirs = project.files(classesPostTransformFU)
-    exclude '**/*LFTest.*', '**/TraceToStringTest.*', '**/AtomicfuReferenceJsTest.*'
-    filter { setFailOnNoMatchingTests(false) } // to run excluded tests in Idea
-}
-
 task transformedTestFU_current(type: Test, dependsOn: transformFU) {
     classpath = files(configurations.jvmTestRuntimeClasspath, classesPostTransformFU)
     testClassesDirs = project.files(classesPostTransformFU)
     exclude '**/*LFTest.*', '**/TraceToStringTest.*', '**/AtomicfuReferenceJsTest.*'
-    filter { setFailOnNoMatchingTests(false) }
-}
-
-task transformedTestBOTH_6(type: Test, dependsOn: [checkJdk16, transformBOTH]) {
-    executable = "$System.env.JDK_16/bin/java"
-    classpath = files(configurations.jvmTestRuntimeClasspath, classesPostTransformBOTH)
-    testClassesDirs = project.files(classesPostTransformBOTH)
-    exclude '**/*LFTest.*', '**/TraceToStringTest.*', '**/TopLevelGeneratedDeclarationsReflectionTest.*', '**/SyntheticFUFieldsTest.*', '**/AtomicfuReferenceJsTest.*'
     filter { setFailOnNoMatchingTests(false) }
 }
 
@@ -310,9 +283,7 @@ task testAtomicfuReferenceJs(type: Test, dependsOn: [compileTestKotlinJvm, trans
 }
 
 task jvmTestAll(dependsOn: [
-        transformedTestFU_6,
         transformedTestFU_current,
-        transformedTestBOTH_6,
         transformedTestBOTH_current,
         transformedTestVH,
         testAtomicfuReferenceJs])
